@@ -1,0 +1,39 @@
+.listado-servicios {
+    @include tablet {
+        @include grid(2, 2rem)
+    }
+
+    padding: 1rem;
+
+    .contenedor-servicio {
+        margin-bottom: 2rem;
+        background-color: rgba($color: #ece9e9d8, $alpha: 1.0);
+        padding: 1rem;
+        border-radius: 1rem;
+        -webkit-box-shadow: 7px 3px 5px 0px rgba(222, 221, 230, 0.73);
+        -moz-box-shadow: 7px 3px 5px 0px rgba(222, 221, 230, 0.73);
+        box-shadow: 7px 3px 5px 0px rgba(222, 221, 230, 0.73);
+
+        text-align: center;
+
+        @include tablet {
+            margin-bottom: 0;
+        }
+
+        p {
+            margin: 0 0 2rem;
+        }
+
+        .nombre-servicio {
+            color: $negro;
+            font-weight: $regular;
+        }
+
+        .precio-servicio {
+            color: $azul;
+            margin: 0;
+            font-weight: $bold;
+
+        }
+    }
+}
