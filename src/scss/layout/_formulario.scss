@@ -1,0 +1,22 @@
+.formulario{
+    width: 100%;
+   
+}
+
+.campo{
+        display: flex;
+        align-items: center;
+        margin-bottom: 2rem;
+       
+        label{
+            color: $blanco;
+            flex: 0 0 10rem; 
+           
+        }
+        input{
+            flex: 1; //factor de crecimiento que hace que el input tome 1px por cada pix que haya disponible
+            padding: 1.5rem;
+            border-radius: 1rem;
+            border: none;
+        }
+}
