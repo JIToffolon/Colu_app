@@ -33,6 +33,18 @@ function iniciarApp() {
 
     //muestra resumen o msj de error
     mostrarResumen();
+    //Alamacena el nombre de la cita
+    nombreCita();
+    //almacena la fecha de la cita
+    fechaCita();
+
+    //desabilita dias pasados
+    deshabilitarFechaAnterior();
+
+    //almacena la hora de la cita
+
+    horaCita();
+
 };
 
 function mostrarSeccion() {
@@ -139,12 +151,46 @@ function seleccionarServicio(e) {
 
     if (element.classList.contains('seleccion')) {
         element.classList.remove('seleccion');
+
+        const id = parseInt(element.dataset.idServicio);
+
+        eliminarServicio(id);
     } else {
 
         element.classList.add('seleccion');
+
+        const servicioObj = {
+            id: parseInt(element.dataset.idServicio),
+            nombre: element.firstElementChild.textContent,
+            precio: element.firstElementChild.nextElementSibling.textContent
+        }
+
+        // console.log(servicioObj);
+
+        agregarServicio(servicioObj);
     }
 
 };
+
+function eliminarServicio(id) {
+
+    const { servicios } = cita;
+    cita.servicios = servicios.filter(servicio => servicio.id !== id);
+
+    console.log(cita);
+
+}
+
+
+
+function agregarServicio(servicioObj) {
+
+    const { servicios } = cita;
+    cita.servicios = [...servicios, servicioObj];
+    console.log(cita);
+
+
+}
 
 
 function routSig() {
@@ -178,6 +224,7 @@ function botonRout() {
     } else if (pagina === 3) {
         siguiente.classList.add('ocultar');
         anterior.classList.remove('ocultar');
+        mostrarResumen(); //Carga el resumen de la cita
     }
     mostrarSeccion();
 }
@@ -189,6 +236,12 @@ function mostrarResumen() {
     //selecionamos el div
     const resumenAlerta = document.querySelector('.resumen-contenido');
 
+    //limpia el html previo
+    while (resumenAlerta.firstChild) {
+        resumenAlerta.removeChild(resumenAlerta.firstChild);
+    }
+
+
     //validacion del objeto
 
     if (Object.values(cita).includes('')) {
@@ -199,9 +252,192 @@ function mostrarResumen() {
         //inyectamos p al div
 
         resumenAlerta.appendChild(incompleto);
-       
-       
+
+        return;
+
+    }
+
+    const headingCita = document.createElement('h3');
+    headingCita.textContent = 'Resumen de Cita';
+    //mostrar resumen
+
+
+
+    const nombreCita = document.createElement('p');
+    nombreCita.innerHTML = `<span>Nombre: </span>${nombre}`;
+
+
+    const fechaCita = document.createElement('p');
+    fechaCita.innerHTML = `<span>Fecha: </span>${fecha}`;
+
+
+
+    const horaCita = document.createElement('p');
+    horaCita.innerHTML = `<span>Hora: </span>${hora}`;
+    
+    
+
+
+    const serviciosCita = document.createElement('div');
+    serviciosCita.classList.add('resumen-servicios');
+
+    const headingServicios = document.createElement('h3');
+    headingServicios.textContent = 'Resumen de Servicios';
+
+    serviciosCita.appendChild(headingServicios);
+
+
+    let cantidad=0;
+
+    //Iterar sobre el arreglo de servicios
+
+    servicios.forEach(servicio => {
+
+        const { nombre, precio } = servicio;
+        const contenedorServicio = document.createElement('div');
+        contenedorServicio.classList.add('contenedor-servicio');
+
+        const textoServicio = document.createElement('p');
+        textoServicio.textContent = nombre;
+
+        const textoPrecio = document.createElement('p');
+        textoPrecio.textContent = precio;
+        textoPrecio.classList.add('precio');
+
+
+        contenedorServicio.appendChild(textoServicio);
+        contenedorServicio.appendChild(textoPrecio);
+        serviciosCita.appendChild(contenedorServicio);
+
+        const totalServicio=precio.split('$');
+        // console.log(parseInt(totalServicio[1].trim()));
+
+        cantidad += parseInt(totalServicio[1].trim());
+
+
+    })
+    resumenAlerta.appendChild(headingCita);
+    resumenAlerta.appendChild(nombreCita);
+    resumenAlerta.appendChild(fechaCita);
+    resumenAlerta.appendChild(horaCita);
+    resumenAlerta.appendChild(serviciosCita);
+
+
+    const cantidadPagar=document.createElement('p');
+    cantidadPagar.innerHTML=`<span>Total a pagar :</span> $    ${cantidad}`
+    cantidadPagar.classList.add('pagar')
+
+    resumenAlerta.appendChild(cantidadPagar);
+
+}
+
+function nombreCita() {
+    const nombreInput = document.querySelector('#nombre');
+
+    nombreInput.addEventListener('input', (e) => {
+
+        const nombreTexto = e.target.value.trim(); // e.target.value indica que es lo que se está escribiendo. El trim() elimina el espacio en blanco.
+
+        //Validacion de que nombreTexto debe tener algo
+        if (nombreTexto === '' || nombreTexto.length < 3) {
+            mostrarAlerta('nombre no válido', 'error');
+        } else {
+            const alerta = document.querySelector('.alerta');
+            if (alerta) {
+                alerta.remove();
+            }
+            cita.nombre = nombreTexto;
+        }
+
+    })
+}
+
+
+function mostrarAlerta(mensaje, tipo) {
+    console.log('el mensaje es', mensaje);
+
+    //si hay una alerta previa no mostrar otra
+    const alertaPrevia = document.querySelector('.alerta');
+    if (alertaPrevia) {
+        return;
     }
 
 
+    const alerta = document.createElement('div');
+    alerta.textContent = mensaje;
+    alerta.classList.add('alerta');
+
+    if (tipo === 'error') {
+        alerta.classList.add('error')
+    }
+    console.log(alerta);
+
+    //insertar en el html
+
+    const formulario = document.querySelector('.formulario');
+    formulario.appendChild(alerta);
+
+    //eliminar alerta dsp de 3 seg
+
+    setTimeout(() => {
+        alerta.remove()
+    }, 3000);
+}
+
+function fechaCita() {
+
+    const fechaInput = document.querySelector('#fecha');
+    fechaInput.addEventListener('input', (e) => {
+
+
+        const dia = new Date(e.target.value).getUTCDay();
+        if ([0, 6].includes(dia)) {
+            e.preventDefault();
+            fechaInput.value = ''; // Esta linea hace que al seleccionar una fecha invalida, no se muestre 
+            mostrarAlerta('Los fines de semana no trabajamos, disfrutamos de la vida', 'error');
+        } else {
+            cita.fecha = fechaInput.value;
+            console.log(cita);
+        }
+
+
+    })
+}
+
+function deshabilitarFechaAnterior() {
+    const inputFecha = document.querySelector('#fecha');
+    const fechaAhora = new Date();
+
+    // Ajustamos la fecha actual para deshabilitar días anteriores
+    fechaAhora.setDate(fechaAhora.getDate() + 1);
+
+    const year = fechaAhora.getFullYear();
+    const month = fechaAhora.getMonth() + 1;
+    const day = fechaAhora.getDate();
+
+    // Formato deseado AAAA-MM-DD
+    const fechaDeshabilitar = `${year}-${month < 10 ? '0' : ''}${month}-${day < 10 ? '0' : ''}${day}`;
+
+    inputFecha.min = fechaDeshabilitar;
+}
+
+function horaCita() {
+    const inputHora = document.querySelector('#hora')
+    inputHora.addEventListener('input', e => {
+        const horaCita = e.target.value
+        const hora = horaCita.split(':');
+
+        if (hora[0] < 10 || hora[0] > 18) {
+            mostrarAlerta('Hora invalida', 'error');
+            setTimeout(() => {
+                inputHora.value = '';
+            }, 3000);
+
+
+        } else {
+            cita.hora = horaCita;
+        }
+
+        console.log(cita);
+    })
 }
